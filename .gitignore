@@ -1,0 +1,49 @@
+# Intermediate / generated outputs
+output/
+input/*.mkv
+input/*.mp4
+input/*.m4v
+input/*.mov
+input/*.avi
+input/*.webm
+input/*.m4b
+input/*.mp3
+input/*.wav
+
+# Keep the input folder itself (ignore contents but track the dir)
+!input/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Generated media (don't commit large outputs)
+*.mkv
+*.mp4
+*.m4v
+*.mov
+*.avi
+*.webm
+*.m4b
+*.wav
+*.mp3
+
+# Environment / venvs
+.env
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Session handoff (internal notes, not project docs)
+handoff.md
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

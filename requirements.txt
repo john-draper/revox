@@ -1,0 +1,28 @@
+# Revox — Python dependencies
+#
+# IMPORTANT: Install PyTorch FIRST and SEPARATELY for your CUDA version.
+# For CUDA 11.8 (RTX 3050/3060/3070/3080/3090, A-series):
+#   pip install torch==2.5.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118
+# For other GPUs/CPU-only, see: https://pytorch.org/get-started/locally/
+#
+# Then install the remaining dependencies:
+#   pip install -r requirements.txt
+#
+# ffmpeg must also be installed system-wide (see README.md).
+
+# WhisperX: GPU-accelerated transcription with word-level alignment.
+# On Python 3.13, install >= 3.7.0. If pip fails, install from source:
+#   pip install git+https://github.com/m-bain/whisperX.git
+whisperx>=3.4.0
+
+# HTTP client for TTS API calls (ElevenLabs / Fish Speech).
+requests>=2.28.0
+
+# Binary msgpack serialization for Fish Speech voice cloning API.
+ormsgpack>=1.2.0
+
+# GUI framework for the desktop application (gui.py).
+customtkinter>=5.2.0
+
+# Offline TTS fallback (Windows SAPI5). No setup required.
+pyttsx3>=2.90
