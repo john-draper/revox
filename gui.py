@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python
 """
-Revox â€” Modern GUI
+Revox — Modern GUI
 Built with CustomTkinter. Provides a sleek, dark-themed interface for the pipeline.
 
 Usage:
@@ -12,7 +12,6 @@ import sys
 import threading
 import queue
 import subprocess
-import shutil
 from pathlib import Path
 from tkinter import filedialog, messagebox
 
@@ -48,8 +47,16 @@ COLORS = {
     "border": "#233356",
 }
 
-FONT_FAMILY = "Segoe UI"
-FONT_MONO = "Consolas"
+# Cross-platform fonts
+if sys.platform == "win32":
+    FONT_FAMILY = "Segoe UI"
+    FONT_MONO = "Consolas"
+elif sys.platform == "darwin":
+    FONT_FAMILY = "Helvetica Neue"
+    FONT_MONO = "Menlo"
+else:
+    FONT_FAMILY = "DejaVu Sans"
+    FONT_MONO = "DejaVu Sans Mono"
 
 VIDEO_EXTS = {".mkv", ".mp4", ".m4v", ".mov", ".avi", ".webm", ".wmv", ".flv"}
 
@@ -128,7 +135,7 @@ class RevoxGUI(ctk.CTk):
         # --- State ---
         self.audio_path = ctk.StringVar(value="")
         self.output_dir = ctk.StringVar(value="output")
-        self.provider = ctk.StringVar(value="fish-speech")
+        self.provider = ctk.StringVar(value="pyttsx3")
         self.is_running = False
         self.current_stage = 0
         self.total_stages = 5
@@ -169,7 +176,7 @@ class RevoxGUI(ctk.CTk):
 
         logo_label = ctk.CTkLabel(
             logo_frame,
-            text="ðŸŽ¬",
+            text="\U0001F3AC",  # clapper board
             font=(FONT_FAMILY, 28),
             width=40,
         )
@@ -215,7 +222,7 @@ class RevoxGUI(ctk.CTk):
         header.pack(fill="x", padx=20, pady=(16, 8))
         ctk.CTkLabel(
             header,
-            text="âš™ï¸  Configuration",
+            text="\u2699\uFE0F  Configuration",  # gear
             font=(FONT_FAMILY, 16, "bold"),
             text_color=COLORS["text"],
         ).pack(side="left")
@@ -245,7 +252,7 @@ class RevoxGUI(ctk.CTk):
 
         ctk.CTkButton(
             file_frame,
-            text="Browseâ€¦",
+            text="Browse\u2026",  # horizontal ellipsis
             font=(FONT_FAMILY, 13),
             fg_color=COLORS["accent_dark"],
             hover_color=COLORS["accent"],
@@ -277,7 +284,7 @@ class RevoxGUI(ctk.CTk):
 
         ctk.CTkButton(
             out_frame,
-            text="Browseâ€¦",
+            text="Browse\u2026",
             font=(FONT_FAMILY, 13),
             fg_color=COLORS["accent_dark"],
             hover_color=COLORS["accent"],
@@ -301,7 +308,7 @@ class RevoxGUI(ctk.CTk):
         ctk.CTkOptionMenu(
             prov_frame,
             variable=self.provider,
-            values=["fish-speech", "elevenlabs"],
+            values=["pyttsx3", "fish-speech", "elevenlabs", "pocket-tts"],
             font=(FONT_FAMILY, 13),
             fg_color=COLORS["card_light"],
             button_color=COLORS["accent_dark"],
@@ -316,7 +323,7 @@ class RevoxGUI(ctk.CTk):
 
         self.run_button = ctk.CTkButton(
             bar,
-            text="â–¶  Start Pipeline",
+            text="\u25B6  Start Pipeline",  # play button
             font=(FONT_FAMILY, 15, "bold"),
             fg_color=COLORS["accent"],
             hover_color=COLORS["accent_hover"],
@@ -327,7 +334,7 @@ class RevoxGUI(ctk.CTk):
 
         self.cancel_button = ctk.CTkButton(
             bar,
-            text="âœ•  Cancel",
+            text="\u2715  Cancel",  # multiplication X
             font=(FONT_FAMILY, 14, "bold"),
             fg_color=COLORS["error"],
             hover_color="#cc3333",
@@ -346,7 +353,7 @@ class RevoxGUI(ctk.CTk):
         header.pack(fill="x", padx=20, pady=(16, 8))
         ctk.CTkLabel(
             header,
-            text="ðŸ“‹  Pipeline Stages",
+            text="\U0001F4CB  Pipeline Stages",  # clipboard
             font=(FONT_FAMILY, 16, "bold"),
             text_color=COLORS["text"],
         ).pack(side="left")
@@ -389,7 +396,7 @@ class RevoxGUI(ctk.CTk):
 
             icon = ctk.CTkLabel(
                 row,
-                text="â—‹",
+                text="\u25CB",  # white circle
                 font=(FONT_FAMILY, 18),
                 text_color=COLORS["text_dimmer"],
                 width=30,
@@ -417,7 +424,7 @@ class RevoxGUI(ctk.CTk):
 
         ctk.CTkLabel(
             header,
-            text="ðŸ–¥ï¸  Console Log",
+            text="\U0001F5A5\uFE0F  Console Log",  # desktop computer
             font=(FONT_FAMILY, 16, "bold"),
             text_color=COLORS["text"],
         ).pack(side="left")
@@ -480,7 +487,7 @@ class RevoxGUI(ctk.CTk):
         self._reset_stages()
 
         self.is_running = True
-        self.run_button.configure(state="disabled", text="â³  Runningâ€¦")
+        self.run_button.configure(state="disabled", text="\u23F3  Running\u2026")  # hourglass
         self.cancel_button.configure(state="normal")
         self.file_entry.configure(state="disabled")
 
@@ -613,16 +620,16 @@ class RevoxGUI(ctk.CTk):
         icon, name = self.stage_labels[idx]
 
         if status == "running":
-            icon.configure(text="â—", text_color=COLORS["accent"])
+            icon.configure(text="\u25D0", text_color=COLORS["accent"])  # circle with left half black
             name.configure(text_color=COLORS["accent"])
         elif status == "done":
-            icon.configure(text="âœ“", text_color=COLORS["success"])
+            icon.configure(text="\u2713", text_color=COLORS["success"])  # check mark
             name.configure(text_color=COLORS["success"])
         elif status == "error":
-            icon.configure(text="âœ•", text_color=COLORS["error"])
+            icon.configure(text="\u2715", text_color=COLORS["error"])  # multiplication X
             name.configure(text_color=COLORS["error"])
         else:
-            icon.configure(text="â—‹", text_color=COLORS["text_dimmer"])
+            icon.configure(text="\u25CB", text_color=COLORS["text_dimmer"])  # white circle
             name.configure(text_color=COLORS["text"])
 
     def _reset_stages(self):
@@ -647,14 +654,14 @@ class RevoxGUI(ctk.CTk):
         self._finish_pipeline()
 
         result = messagebox.askyesno(
-            "Pipeline Complete! ðŸŽ‰",
+            "Pipeline Complete!",
             "The video audio has been successfully censored.\n\nWould you like to open the output folder?",
         )
         if result:
             self._open_output_folder()
 
     def _finish_pipeline(self):
-        self.run_button.configure(state="normal", text="â–¶  Start Pipeline")
+        self.run_button.configure(state="normal", text="\u25B6  Start Pipeline")
         self.cancel_button.configure(state="disabled")
         self.file_entry.configure(state="normal")
         if self.current_stage == self.total_stages:

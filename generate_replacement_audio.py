@@ -34,8 +34,25 @@ import time
 import wave
 from pathlib import Path
 
-import ormsgpack
-import requests
+# Load .env file if present (does not override existing OS env vars)
+def _load_dotenv(path: str = ".env") -> None:
+    env_path = Path(path)
+    if not env_path.is_file():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        val = val.strip().strip("\"'")
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+_load_dotenv()
+
+# requests and ormsgpack are only needed for fish-speech / elevenlabs providers.
+# They are imported lazily so the default pyttsx3 path works without them.
 
 # --------------------------------------------------------------------------- #
 # API configuration (env var fallbacks)
@@ -83,6 +100,8 @@ def generate_elevenlabs(
     model_id: str,
 ) -> bytes:
     """Generate audio using the ElevenLabs API."""
+    import requests  # lazy import — not needed for pyttsx3
+
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
     headers = {
         "xi-api-key": api_key,
@@ -126,6 +145,9 @@ def generate_fish_speech(
     Returns:
         The generated audio as raw bytes.
     """
+    import requests  # lazy import — not needed for pyttsx3
+    import ormsgpack  # lazy import — not needed for pyttsx3
+
     # Build request payload
     payload: dict = {
         "text": text,
@@ -341,16 +363,16 @@ def process_replacement(
         log(f"    [saved] {output_path} ({len(audio_bytes) / 1024:.1f} KB)")
         return str(output_path)
 
-    except requests.HTTPError as exc:
-        status = exc.response.status_code if exc.response is not None else "unknown"
-        body = exc.response.text[:200] if exc.response is not None else ""
-        log(f"    [error] HTTP {status}: {exc} | body: {body}")
-        return None
-    except requests.RequestException as exc:
-        log(f"    [error] Request failed: {exc}")
-        return None
     except Exception as exc:
-        log(f"    [error] {type(exc).__name__}: {exc}")
+        # Handle HTTP errors from requests without importing it at module level
+        exc_name = type(exc).__name__
+        if exc_name in ("HTTPError", "RequestException", "ConnectionError", "Timeout"):
+            response = getattr(exc, "response", None)
+            status = getattr(response, "status_code", "unknown") if response else "unknown"
+            body = getattr(response, "text", "")[:200] if response else ""
+            log(f"    [error] {exc_name} {status}: {exc} | body: {body}")
+        else:
+            log(f"    [error] {exc_name}: {exc}")
         return None
 
 

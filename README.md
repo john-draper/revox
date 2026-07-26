@@ -55,12 +55,14 @@ pip install -r requirements.txt
 
 ### Configure API Keys (optional)
 
-Copy `.env.example` to `.env` and fill in your TTS provider details. If you skip this, Revox defaults to the offline `pyttsx3` engine.
+Copy `.env.example` to `.env` and fill in your TTS provider details. If you skip this, Revox defaults to the offline `pyttsx3` engine (no voice cloning, but works out of the box).
 
 ```bash
 copy .env.example .env        (Windows)
 cp .env.example .env          (macOS/Linux)
 ```
+
+The `.env` file is automatically loaded by `run.py` — you don't need to set OS-level environment variables.
 
 ### Place Your Videos
 
@@ -77,7 +79,7 @@ input/movie.mkv
 python run.py "input/movie.mkv"
 
 # Batch process all videos in input/:
-python run.bat            # Windows
+run.bat                   # Windows
 python run_all.py         # Cross-platform
 
 # GUI:

@@ -19,10 +19,39 @@ Usage:
 """
 
 import json
+import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+
+# ---------------------------------------------------------------------------
+# .env loader (no external dependency)
+# ---------------------------------------------------------------------------
+
+def load_dotenv(path: str = ".env") -> None:
+    """Load environment variables from a .env file if it exists.
+
+    Does NOT override variables already set in the OS environment.
+    """
+    env_path = Path(path)
+    if not env_path.is_file():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        val = val.strip().strip("\"'")
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+load_dotenv()
 
 
 # ---------------------------------------------------------------------------
